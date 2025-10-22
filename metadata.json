@@ -1,5 +1,5 @@
 {
-  "name": "Learned Multi-LoRA Fusion Guide",
-  "description": "An interactive web-based guide and simulator for the Learned Multi-LoRA Fusion system, demonstrating clause-level fusion, Sparsegen routing, and PPL-based chunking.",
+  "name": "MoLE: Mixture of LoRA Experts",
+  "description": "The official project page for MoLE, a hybrid architecture integrating Mixture-of-Experts (MoE) routing with Low-Rank Adaptation (LoRA) fusion for hierarchical multi-task language model adaptation. Includes the research paper and core codebase.",
   "requestFramePermissions": []
 }

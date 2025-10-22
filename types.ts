@@ -13,19 +13,18 @@ export interface FusionResult {
   finalResponse: string;
 }
 
-export interface LoRAExpert {
-  id: string;
-  name: string;
-  description: string;
-  performanceImpact: {
-    latency: number; // ms
-    memory: number; // GB
-  };
-}
-
 export interface BaseModel {
   id: string;
   name: string;
-  baseLatency: number; // ms
-  baseMemory: number; // GB
+  baseLatency: number;
+  baseMemory: number;
+}
+
+export interface LoRAExpert {
+  id: string;
+  name: string;
+  performanceImpact: {
+    latency: number;
+    memory: number;
+  };
 }
