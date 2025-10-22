@@ -1,4 +1,6 @@
 
+import type { BaseModel, LoRAExpert } from './types';
+
 export const quickStartCode = `# Clone or navigate to project directory
 cd multi-lora-fusion
 
@@ -78,7 +80,7 @@ export const mdsCode = `def compute_task_positions(loras, datasets):
     corr_matrix = np.corrcoef(perf_matrix)
     
     # CRITICAL FIX: Correct distance formula
-    distance_matrix = (1 - corr_matrix) / 2
+    distance_matrix = (1 - corr) / 2
     
     # Embed in 2D space
     mds = MDS(n_components=2, dissimilarity='precomputed')
@@ -97,7 +99,7 @@ boundaries = find_minima(ppls, threshold=0.5)
 # Output: [2, 5]  ✓ PASS (correct semantic boundaries)`;
 
 export const mdsFixCode = `corr_matrix = np.corrcoef(performance_data)
-distance = (1 - corr_matrix) / 2
+distance = (1 - corr) / 2
 
 assert np.all(distance >= 0)    # ✓ PASS
 assert np.all(distance <= 1)    # ✓ PASS
@@ -142,3 +144,71 @@ assert p_value < 0.05, "No significant improvement"
 assert np.mean(lora_scores) > np.mean(baseline_scores), "LoRA underperforms baseline"
 print(f"t-statistic: {t_stat:.3f}, p-value: {p_value:.4f}")`;
 
+export const addLoRAExpertCode = `# 1. Train your new LoRA on a specialized dataset
+trainer = CreativeLoRATrainer(model_name='Qwen/Qwen2-1.5B')
+trainer.train(output_dir='./models/creative_lora')
+
+# 2. Register the new expert with the fusion engine
+engine.add_lora_expert(
+    name="creative",
+    path="./models/creative_lora"
+)
+
+# 3. Re-compute MDS task positions for cost-aware fusion
+engine.recompute_task_positions()
+
+print("✅ New 'creative' expert integrated!")`;
+
+export const tuneHypernetworkCode = `# Adjust global sparsity via lambda_val
+# Higher lambda = more sparse (fewer experts selected)
+engine.set_hyperparameter("lambda_val", 0.9)
+
+# Retrain the hypernetwork to learn routing for new tasks
+engine.retrain_hypernetwork(
+    new_hybrid_dataset,
+    epochs=1,
+    learning_rate=5e-5
+)`;
+
+export const createHybridDatasetCode = `from core.dataset_utils import create_hybrid_dataset
+
+# Define the mix of datasets and their sampling ratios
+dataset_mix = {
+    "meta-math/MetaMathQA": 0.4,
+    "m-a-p/CodeFeedback": 0.4,
+    "bigscience/P3": 0.2  # General knowledge dataset
+}
+
+# Generate a new hybrid dataset with 10,000 samples
+hybrid_dataset = create_hybrid_dataset(
+    mix_config=dataset_mix,
+    num_samples=10000,
+    output_path="./data/hybrid_v2.json"
+)`;
+
+export const contributionCodeExample = `# 1. Fork and clone the repository
+git clone https://github.com/YOUR_USERNAME/multi-lora-fusion.git
+cd multi-lora-fusion
+
+# 2. Create a new branch for your feature
+git checkout -b feat/my-awesome-feature
+
+# 3. Make your changes and commit them
+git add .
+git commit -m "feat: Add my awesome feature"
+
+# 4. Push to your fork and open a Pull Request
+git push origin feat/my-awesome-feature`;
+
+
+export const AVAILABLE_BASE_MODELS: BaseModel[] = [
+  { id: 'qwen2-1.5b', name: 'Qwen2-1.5B (Core)', baseLatency: 125, baseMemory: 8.2 },
+  { id: 'core-reasoner-s', name: 'Core-Reasoner-S (Ethical)', baseLatency: 90, baseMemory: 6.5 },
+];
+
+export const AVAILABLE_LORA_EXPERTS: LoRAExpert[] = [
+  { id: 'math', name: 'Math Expert', description: 'Specialized in GSM8K-style math problems.', performanceImpact: { latency: 8, memory: 0.8 } },
+  { id: 'code', name: 'Code Expert', description: 'Trained on HumanEval for Python code generation.', performanceImpact: { latency: 10, memory: 1.1 } },
+  { id: 'creative', name: 'Creative Writing Expert', description: 'Fine-tuned for poetry and narrative generation.', performanceImpact: { latency: 6, memory: 0.7 } },
+  { id: 'legal', name: 'Legal Analysis Expert', description: 'Trained on legal documents for summarization.', performanceImpact: { latency: 12, memory: 1.3 } },
+];

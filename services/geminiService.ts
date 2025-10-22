@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import type { FusionResult } from '../types';
 
@@ -92,5 +91,37 @@ export async function runFusionSimulation(prompt: string): Promise<FusionResult>
   } catch (error) {
     console.error("Error in Gemini API call:", error);
     throw new Error("Failed to simulate LoRA fusion.");
+  }
+}
+
+
+export async function getLoRACombinationAnalysis(loraNames: string[]): Promise<string> {
+   const systemInstruction = `You are an expert in Mixture-of-Experts and LoRA model fusion.
+  A user has selected a combination of LoRA experts to fuse with a base model.
+  Your task is to provide a concise analysis of this specific combination.
+  
+  Focus on:
+  1.  **Synergies**: What are the strengths of this combination? What complex tasks could it handle well?
+  2.  **Potential Conflicts/Trade-offs**: Are there any LoRAs that might interfere with each other? What are the performance trade-offs (e.g., increased latency for specialized skills)?
+  3.  **Ideal Use Case**: Briefly describe the ideal type of prompt or problem for this custom-built model.
+
+  Keep your analysis to 2-3 short paragraphs.
+  `;
+  
+  const prompt = `Analyze the following LoRA expert combination: [${loraNames.join(', ')}].`;
+
+  try {
+     const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+      config: {
+        systemInstruction: systemInstruction,
+        temperature: 0.6,
+      },
+    });
+    return response.text;
+  } catch (error) {
+    console.error("Error in Gemini analysis call:", error);
+    throw new Error("Failed to get LoRA combination analysis.");
   }
 }
