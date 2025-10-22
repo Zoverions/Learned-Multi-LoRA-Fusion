@@ -7,6 +7,7 @@ import { InteractiveDemo } from './components/InteractiveDemo';
 import { ArchitectureDiagram } from './components/ArchitectureDiagram';
 import { BenchmarkTable } from './components/BenchmarkTable';
 import { TrainingDashboard } from './components/TrainingDashboard';
+import { DeepDive } from './components/DeepDive';
 import {
   quickStartCode,
   trainingCode,
@@ -108,6 +109,10 @@ const App: React.FC = () => {
             <h3 className="text-xl font-semibold text-teal-400 mt-8 mb-2">Statistical Validation</h3>
             <p className="mb-2">A paired t-test is used to confirm that the observed improvements are not due to chance. A p-value less than 0.05 indicates a statistically significant result.</p>
             <CodeBlock code={ttestCode} language="python" />
+          </SectionCard>
+
+          <SectionCard title="🔬 Comprehensive Technical Deep Dive & Validation Analysis" id="deep-dive">
+            <DeepDive />
           </SectionCard>
 
         </div>
