@@ -1,7 +1,8 @@
 {
-  "name": "mole:-mixture-of-lora-experts",
+  "name": "nexus-agentic-suite",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "An agentic automation suite combining features from OpenClaw, Agent-Zero, and MemU.",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,8 +11,9 @@
   },
   "dependencies": {
     "@google/genai": "^1.26.0",
-    "react-dom": "^19.2.0",
-    "react": "^19.2.0"
+    "lucide-react": "^0.574.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

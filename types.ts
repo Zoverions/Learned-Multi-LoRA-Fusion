@@ -1,30 +1,60 @@
-
-export interface FusionChunk {
-  text: string;
-  weights: {
-    math: number;
-    code: number;
-    creative: number;
-  };
-}
-
-export interface FusionResult {
-  chunks: FusionChunk[];
-  finalResponse: string;
-}
-
-export interface BaseModel {
+export interface Agent {
   id: string;
   name: string;
-  baseLatency: number;
-  baseMemory: number;
+  type: 'pi' | 'executor' | 'browser';
+  status: 'idle' | 'busy' | 'offline' | 'error';
+  lastActive: string;
+  description: string;
 }
 
-export interface LoRAExpert {
+export interface Memory {
+  id: string;
+  content: string;
+  category: 'user' | 'work' | 'preference' | 'fact' | 'system';
+  timestamp: string;
+  agentId?: string;
+  score?: number; // Relevance score
+  relatedIds?: string[]; // IDs of related memories
+}
+
+export interface Channel {
   id: string;
   name: string;
-  performanceImpact: {
-    latency: number;
-    memory: number;
-  };
+  type: 'whatsapp' | 'discord' | 'slack' | 'telegram' | 'web';
+  status: 'connected' | 'disconnected' | 'error';
+  config: Record<string, string>;
+  lastMessage?: string;
+}
+
+export interface Message {
+  id: string;
+  role: 'user' | 'assistant' | 'system' | 'tool';
+  content: string;
+  timestamp: string;
+  agentId?: string;
+  steps?: ExecutionStep[]; // Steps taken if it's a tool response
+}
+
+export interface TerminalLog {
+  id: string;
+  timestamp: string;
+  type: 'info' | 'warning' | 'error' | 'success';
+  message: string;
+  source: string;
+}
+
+export interface Tool {
+  id: string;
+  name: string;
+  description: string;
+  status: 'ready' | 'running' | 'error';
+  icon?: string;
+}
+
+export interface ExecutionStep {
+  id: string;
+  toolId: string;
+  action: string;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  output?: string;
 }
