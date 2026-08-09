@@ -1,3 +1,5 @@
+> **Proposed historical archive:** The current repository is an AI Studio dashboard prototype, not evidence of learned multi-LoRA fusion. See [ARCHIVE_NOTICE.md](ARCHIVE_NOTICE.md) and [MIGRATION_ROADMAP.md](MIGRATION_ROADMAP.md).
+
 <div align="center">
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
