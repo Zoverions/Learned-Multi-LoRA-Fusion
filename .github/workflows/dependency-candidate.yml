@@ -1,0 +1,81 @@
+name: LoRA Nexus Read-Only Dependency Candidate
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lora-nexus-dependency-candidate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  candidate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out source without write credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Generate candidate without broad manifest changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp package.json "$RUNNER_TEMP/package.before.json"
+          npm uninstall @google/genai --save --package-lock-only
+          npm audit fix --package-lock-only
+          node - <<'NODE'
+          const fs = require('fs');
+          const before = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + '/package.before.json', 'utf8'));
+          const after = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          const expected = JSON.parse(JSON.stringify(before));
+          delete expected.dependencies['@google/genai'];
+          if (JSON.stringify(after) !== JSON.stringify(expected)) {
+            console.error('package.json changed beyond removal of unused @google/genai');
+            console.error(JSON.stringify({ before, after }, null, 2));
+            process.exit(1);
+          }
+          NODE
+          echo '=== candidate diff stat ==='
+          git diff --stat -- package.json package-lock.json
+          echo '=== package.json diff ==='
+          git diff -- package.json
+
+      - name: Install exact candidate graph
+        run: npm ci
+
+      - name: Build archived frontend
+        run: npm run build
+
+      - name: Audit candidate production graph
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Audit candidate full graph
+        run: npm audit --audit-level=high
+
+      - name: Record candidate identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum package.json package-lock.json
+          git hash-object package.json package-lock.json
+
+      - name: Upload reviewed candidate files
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.0
+        with:
+          name: lora-nexus-dependency-candidate-${{ github.sha }}
+          path: |
+            package.json
+            package-lock.json
+          if-no-files-found: error
+          retention-days: 3
