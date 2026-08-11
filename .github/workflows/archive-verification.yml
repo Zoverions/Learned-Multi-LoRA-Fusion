@@ -1,0 +1,66 @@
+name: LoRA Nexus Archive Verification
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lora-nexus-archive-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  archive-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Verify identity and credential boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f PORTFOLIO_STATUS.md
+          grep -Fq 'bf3b5e379129d2dcd187a6fb9631d1ff8877bde7' PORTFOLIO_STATUS.md
+          grep -Fq "from './components/Dashboard'" App.tsx
+          grep -Fq 'mockAgentService' components/Dashboard.tsx
+          grep -Fq 'This is a mock response from the agent.' services/mockAgentService.ts
+          grep -Fq "_synthetic_ppl" constants.ts
+          grep -Fq "mole: '89.7%'" components/BenchmarkTable.tsx
+          grep -Fq "mole: '45ms'" components/BenchmarkTable.tsx
+          grep -Fq "host: '127.0.0.1'" vite.config.ts
+          if grep -Fq 'process.env.API_KEY' vite.config.ts || grep -Fq 'GEMINI_API_KEY' vite.config.ts; then
+            echo 'Browser provider credential injection remains in Vite config.' >&2
+            exit 1
+          fi
+          if grep -Fq 'GoogleGenAI' services/geminiService.ts; then
+            echo 'Direct browser Gemini client remains enabled.' >&2
+            exit 1
+          fi
+          grep -Fq 'does not implement real LoRA fusion' services/geminiService.ts
+
+      - name: Install exact locked dependencies
+        run: npm ci
+
+      - name: Build archived frontend
+        run: npm run build
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Audit full locked graph
+        run: npm audit --audit-level=high
